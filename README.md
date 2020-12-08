@@ -1,6 +1,6 @@
 # ar-car-camera-controller
 
-# Build
+## Build
 ```
 $ cd {catkin_workspace}/src
 $ git clone https://github.com/hiro-han/ar-car-camera-controller.git camera_controller
@@ -9,3 +9,9 @@ $ catkin_make
 $ source devel/setup.bash
 ```
 
+## Run
+```
+<launch>
+  <node name="camera_controller" pkg="camera_controller" type="camera_controller_node"/>
+</launch>
+```
