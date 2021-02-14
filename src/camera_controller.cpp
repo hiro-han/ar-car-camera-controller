@@ -3,9 +3,10 @@
 #include "car_control_msgs/CameraControl.h"
 #include "std_msgs/Header.h"
 #include <tf/transform_broadcaster.h>
-
+#include "headset_type.h"
 
 ros::Publisher publisher;
+HeadSetType type = HeadSetType::OculusQuest2;
 
 void publishRPY(const std_msgs::Header &header, const double r, const double p, const double y) {
     car_control_msgs::CameraControl msg;
@@ -13,6 +14,9 @@ void publishRPY(const std_msgs::Header &header, const double r, const double p, 
     msg.roll = r;
     msg.pitch = p;
     msg.yaw = y;
+    if (type == HeadSetType::OculusQuest2) {
+      msg.roll = -msg.roll;
+    }
     ROS_DEBUG("publish :  seq = [%d], r = %f, p = %f, y = %f", msg.header.seq, msg.roll, msg.pitch, msg.yaw);
     publisher.publish(msg);
 }
@@ -29,9 +33,22 @@ void chatterCallback(const geometry_msgs::PoseStamped &msg) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "camera_controller");
   ros::NodeHandle n;
+  ros::NodeHandle pn("~");
+
+  std::string type_str;
+  std::string topic_name;
+  pn.getParam("headset_type", type_str);
+  if (type_str == "OculusQuest2") {
+    type = HeadSetType::OculusQuest2;
+    topic_name = "/oculus/head_set/pose";
+  } else {
+    type = HeadSetType::OculusGo;
+    topic_name = "oculus_pose";
+  }
+
   publisher = n.advertise<car_control_msgs::CameraControl>("camera_rpy", 100);
 
-  ros::Subscriber subscriber = n.subscribe("oculus_pose", 50, chatterCallback);
+  ros::Subscriber subscriber = n.subscribe(topic_name, 50, chatterCallback);
 
   ros::spin();
 
